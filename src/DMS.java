@@ -7,9 +7,9 @@ import java.time.format.DateTimeParseException;
 //DMS functional class
 public class DMS {
     //Declaring my class attributes
-    private final List<Record> records = new ArrayList<>();
-    private final List<AuditLog> auditLogs = new ArrayList<>();
-    private final List<EmployeeRecord> employeeRecords = new ArrayList<>();
+    public final List<Record> records = new ArrayList<>();
+    public final List<AuditLog> auditLogs = new ArrayList<>();
+    public final List<EmployeeRecord> employeeRecords = new ArrayList<>();
     public final Map<Integer, String> validUsers = new HashMap<>();
 
     // Load both reservation records and audit logs from a file
@@ -26,8 +26,8 @@ public class DMS {
             employeeRecords.clear();
             //Inserting a string line to ensure files have the correct formatting.
             String line; //The one below is for records
-            DateTimeFormatter auditFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm a");
-            DateTimeFormatter hireFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");//Employee records file
+            DateTimeFormatter auditFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm a"); // For audit records
+            DateTimeFormatter hireFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd"); // For employee hire dates
             //Ensuring the separator is in each line
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("-");
@@ -48,7 +48,15 @@ public class DMS {
                         System.out.println("Invalid reservation record: " + line);
                     }
                     //Given an additional file with identifiers.
-                } else if (parts.length == 6 && parts[2].equalsIgnoreCase("Server") || parts[2].equalsIgnoreCase("Supervisor") || parts[2].equalsIgnoreCase("Busser") || parts[2].equalsIgnoreCase("Host")) {
+                    //Using array 3 for the identifier.
+                } else if (parts.length == 6 && (
+                        parts[3].equalsIgnoreCase("Server") ||
+                                parts[3].equalsIgnoreCase("Supervisor") ||
+                                parts[3].equalsIgnoreCase("Busser") ||
+                                parts[3].equalsIgnoreCase("Host") ||
+                                parts[3].equalsIgnoreCase("Manager")
+                )) {
+                    // Your employee record parsing logic goes here
                     // Employee Record
                     try {
                         Integer employId = Integer.parseInt(parts[0].trim());
@@ -159,7 +167,7 @@ public class DMS {
         boolean removed = records.removeIf(r -> r.getId().equals(id));
         System.out.println(removed ? "Record removed." : "Record not found.");
     }
-
+  //Error message if the log is not found or it's removed.
     public void removeAuditLog(Integer employId) {
         boolean removed = auditLogs.removeIf(log -> log.getEmployId().equals(employId));
         System.out.println(removed ? "Audit log entry removed." : "Audit log entry not found.");
@@ -257,8 +265,8 @@ public class DMS {
                 .sorted(Comparator.comparing(AuditLog::getTimestamp))
                 .limit(10000)
                 .toList();
-        System.out.println("\n--- Audit Report ---");
-        for (AuditLog log : filtered) {
+        System.out.println("\n--- Audit Report ---"); //Printing out the audit log.
+        for (AuditLog log : filtered) {//Displaying each employee entry.
             String maskedNotes = currentUserRole.equalsIgnoreCase("audit") ? log.getNotes() : "***";
             System.out.printf("EmployeeID: %d | Role: %s | Action: %s | Time: %s | Employee Name: %s | Reports: %s\n",
                     log.getEmployId(), log.getRole(), log.getActionType(),
@@ -270,46 +278,81 @@ public class DMS {
 
     //Method to add in a new employee record.
     public void addEmployeeRecord(Scanner scanner) {
-        try { //Prompting the user to insert the data along with exceptions for errors.
-            System.out.print("Enter New Employee ID: "); //Prompting for new employee ID
-            Integer employId = Integer.parseInt(scanner.nextLine().trim());
-
+        try {
+            System.out.print("Enter New Employee ID: ");
+            String idInput = scanner.nextLine().trim();
+            if (!idInput.matches("\\d{7}")) {
+                System.out.println("Error: Employee ID must be at least 7 digits.");
+                return;
+            }
+            Integer employId = Integer.parseInt(idInput);
             boolean exists = employeeRecords.stream().anyMatch(e -> e.getEmployID() == employId);
-            if (exists) { //Gives an error message in case it's a duplicate.
+            if (exists) {
                 System.out.println("Error: Employee record already exists.");
                 return;
             }
-            //Other prompts for the user to input.
             System.out.print("Enter Employee Full Name: ");
             String employName = scanner.nextLine().trim();
 
             System.out.print("Enter Gender: ");
             String employGen = scanner.nextLine().trim();
 
-            System.out.print("Enter Employee Role: ");
+            System.out.print("Enter Employee Role: "); //Can be any role within the restaurant.
             String employRole = scanner.nextLine().trim();
 
-            System.out.print("Enter Status (FullTime/PartTime): ");
-            String employStat = scanner.nextLine().trim();
-
-            System.out.print("Enter Hire Date (YYYY/MM/DD): ");
-            LocalDate hireDate = LocalDate.parse(scanner.nextLine().trim());
-
-            // Add to employeeRecords list using the clas attributes.
-            //using the users validation for authorized managers usage.
-            employeeRecords.add(new EmployeeRecord(employId, employName, employGen, employRole, employStat, hireDate));
-            validUsers.put(employId, employRole.toUpperCase()); // Optional: add to login map
-            System.out.println("Employee record added.");
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-        }
+            System.out.print("Enter working status: "); //Enter their availability.
+            String employStat = scanner.nextLine().trim(); //Exception
+            employStat = employStat.toUpperCase();//given the option for lower or upper case.
+            if (!employStat.equalsIgnoreCase("FullTime") && !employRole.equalsIgnoreCase("PartTime")) {
+                System.out.println("Error: Role must be either FullTime or PartTime'.");
+                return;
+            }
+          //Prompting employer to enter the hire date.
+            System.out.print("Enter Hire Date: ");
+            String dateInput = scanner.nextLine().trim();
+            DateTimeFormatter hireFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+            LocalDate hireDate;
+            try { //Error message.
+                hireDate = LocalDate.parse(dateInput, hireFormatter);
+            } catch (DateTimeParseException e) {
+                System.out.println("Error: Invalid date format. Please use yyyy/MM/dd.");
+                return;
+            }
+            // Add to employeeRecords list
+        employeeRecords.add(new EmployeeRecord(employId, employName, employGen, employRole, employStat, hireDate));
+        validUsers.put(employId, employRole.toUpperCase());
+        System.out.println("Employee record added.");
+    } catch (Exception e) { //Error message
+        System.out.println("Error: " + e.getMessage());
     }
+}
 
     //Method to remove employee record.
     public void removeEmployeeRecord(Integer employId) {
         boolean removed = employeeRecords.removeIf(e -> e.getEmployID() == employId);
         System.out.println(removed ? "Employee record removed." : "Employee record not found.");
     }
+    //Error message if employee records are not found.
+    public void displayEmployeeRecords() {
+        if (employeeRecords.isEmpty()) {
+            System.out.println("No employee records found.");
+            return;
+        }
+        //To display each employee record.
+        System.out.println("Employee Records:");
+        for (EmployeeRecord record : employeeRecords) { //Clean print out to display.
+            System.out.printf("ID: %d | Name: %s | Gender: %s | Role: %s | Status: %s | Hire Date: %s\n",
+                    record.getEmployID(),
+                    record.getEmployName(),
+                    record.getEmployGen(),
+                    record.getEmployRole(),
+                    record.getEmployStat(),
+                    record.getHireDate().toString()
+            );
+        }
+
+    }
+
     //To keep track og =f the mangers removing or adding a employee record.
     public void logAuditAction(int actorId, String role, String actionType, LocalDateTime timestamp, String targetId, String notes) {
             auditLogs.add(new AuditLog(actorId, role, actionType, timestamp, targetId, notes));
