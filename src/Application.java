@@ -8,8 +8,10 @@
 // For record creation, users must provide a reservation description, guided by the prompts presented.
 // Additionally, the program will showcase a complete listing of all customer reservations when using the display option.
 import java.util.Scanner;
+import java.time.LocalDateTime;
+
 //Importing the main class util scanner.
-//Declaring Application main class
+//Using the file scanner
 public class Application {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -27,18 +29,18 @@ public class Application {
             role = "Guest";
             return;
         }
-       //Prompts the user to enter their 7 digit ID number. 
+        //Prompting the user to input the data.
         System.out.print("Enter your 7-digit Employee ID: ");
         String idInput = scanner.nextLine().trim();
-       //Notify them if it's invalid
+        //Erro message if it's invalid
         if (!idInput.matches("\\d{7}")) {
             System.out.println("Invalid ID format. Must be a 7-digit number.");
             return;
         }
-
+         //Parse employee Id for an integer.
         int employeeId = Integer.parseInt(idInput);
 
-// Validate login
+// ✅ Validate login
         if (!manager.validUsers.containsKey(employeeId) ||
                 !manager.validUsers.get(employeeId).equalsIgnoreCase(role)) {
             System.out.println("Access Denied: ID and Role do not match system records.");
@@ -58,10 +60,11 @@ public class Application {
                 System.out.println("5. Update Reservation"); //Modify Reservation
                 System.out.println("6. Exit"); //Exit
             } else if (role.equalsIgnoreCase("Manager")) {
-                System.out.println("1. Load Audit Logs from File");//Insert file
+                System.out.println("1. Load Logs from File");//Insert file
                 System.out.println("2. Display Log");//Display the audit log listing
                 System.out.println("3. Remove Data");//Remove data from log audit log
                 System.out.println("4. Audit log");//Access the audit log
+                System.out.println("5. Employee records");
                 System.out.println("6. Exit");//Exit menu
             } else {
                 System.out.println("6. Exit");//Exit menu
@@ -93,19 +96,33 @@ public class Application {
                         System.out.println("Access Denied"); //Otherwise denied.
                     }
                     break;
-                case "3": //Cases for the host to add a reservation and the manger to remove n employee.
+                case "3": // Host adds reservation; Manager removes employee
+                    //With the addition method of keeping track of the removing and adding employee records.
                     if (role.equalsIgnoreCase("Host")) {
                         manager.addRecord(scanner);
                     } else if (role.equalsIgnoreCase("Manager")) {
-                        System.out.print("Enter Employee ID: ");
-                        try { //Allowing the system to retrieve the ID number.
-                            Integer employId = Integer.parseInt(scanner.nextLine().trim());
-                            manager.removeAuditLog(employId);
-                        } catch (NumberFormatException e) { //Notify the user if an error has occurred.
-                            System.out.println("Invalid ID format.");
+                        System.out.print("Enter your Authorized ID: ");
+                        String authIdInput = scanner.nextLine().trim();
+                        try { //Adds on.
+                            int authId = Integer.parseInt(authIdInput);
+                            if (manager.validUsers.containsKey(authId) &&
+                                    manager.validUsers.get(authId).equalsIgnoreCase("Manager")) {
+                                //Method to remove the record.
+                                System.out.print("Enter Employee ID to remove: ");
+                                int employeeToRemove = Integer.parseInt(scanner.nextLine().trim());
+                                manager.removeEmployeeRecord(employeeToRemove);
+                                manager.logAuditAction(authId, "Manager", "REMOVE_EMPLOYEE", LocalDateTime.now(),
+                                        String.valueOf(employeeToRemove), "Removed employee record");
+
+                              //Gives the error message if the user input the ID number incorrectly.
+                            } else {
+                                System.out.println("Authorization Failed");
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid ID format. Must be a 7-digit number.");
                         }
                     } else {
-                        System.out.println("Access Denied"); //Otherwise denied.
+                        System.out.println("Access Denied");
                     }
                     break;
 
@@ -119,14 +136,61 @@ public class Application {
                         System.out.println("Access Denied"); //Otherwise denied.
                     }
                     break;
-                case "5": //Option for host to update a reservation
+                case "5": // Host updates reservation; Manager manages employee records
                     if (role.equalsIgnoreCase("Host")) {
                         System.out.print("Enter Reserved ID to update: ");
-                        manager.updateRecord(scanner, Integer.valueOf(scanner.nextLine().trim()));
+                        try {
+                            int reservationId = Integer.parseInt(scanner.nextLine().trim());
+                            manager.updateRecord(scanner, reservationId);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid reservation ID format.");
+                        } //Prompting the manager to input their ID number to access the portal.
+                    } else if (role.equalsIgnoreCase("Manager")) {
+                        System.out.print("Enter your Authorized ID: ");
+                        String authIdInput = scanner.nextLine().trim();
+                        try {
+                            int authId = Integer.parseInt(authIdInput);
+                            if (manager.validUsers.containsKey(authId) &&
+                                    manager.validUsers.get(authId).equalsIgnoreCase("Manager")) {
+                                //Manager option 5 menu.
+                                System.out.println("******Records Menu******");
+                                System.out.println("1. Display Employee Records");
+                                System.out.println("2. Add Employee");
+                                System.out.println("3. Remove Employee");
+                                System.out.println("4. Main Menu");
+
+                                String empAction = scanner.nextLine().trim();
+
+                                switch (empAction) { //Case to display employee records.
+                                    case "1" -> manager.displayEmployeeRecords();
+
+                                    case "2" -> { //Case to add employee record.
+                                        manager.addEmployeeRecord(scanner);
+                                    }
+                                    case "3" -> { //Case to remove employee record.
+                                        System.out.print("Enter Employee ID to remove: ");
+                                        int empId = Integer.parseInt(scanner.nextLine().trim());
+                                        manager.removeAuditLog(empId);
+                                    }
+                                    //Case to return back to the main menu.
+                                    case "4" -> {
+                                        System.out.println("Loading...");
+                                        // Add logic here if needed
+                                    } //Notify user in invalid entry has been entered.
+                                    default -> System.out.println("Invalid option.");
+                                }
+
+
+                        } else { //Additional error message is code has failed.
+                                System.out.println("Authorization Failed");
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid ID format..");
+                        }
                     } else {
-                        System.out.println("Access Denied"); //Otherwise denied.
+                        System.out.println("Access Denied");
                     }
-                    break;
+                    break; //Positive message.
                 case "6": //Case allowing the users to log out successfully.
                     System.out.println("Successfully logged out");
                     return;
