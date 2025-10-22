@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="ManaMenuGUI">
+  <grid id="27dc6" binding="ManaMenu" layout-manager="GridLayoutManager" row-count="5" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="500" height="400"/>
+    </constraints>
+    <properties>
+      <font name="Castellar" size="0" style="2"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <component id="82c4" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font name="Castellar" size="18" style="2"/>
+          <horizontalAlignment value="0"/>
+          <horizontalTextPosition value="0"/>
+          <text value="Management Menu"/>
+        </properties>
+      </component>
+      <vspacer id="3886a">
+        <constraints>
+          <grid row="1" column="1" row-span="3" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+      <component id="c138d" class="javax.swing.JList" binding="list2">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="2" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <minimum-size width="300" height="150"/>
+            <preferred-size width="400" height="200"/>
+            <maximum-size width="500" height="250"/>
+          </grid>
+        </constraints>
+        <properties>
+          <background color="-7452618"/>
+          <font name="Baskerville Old Face" size="20"/>
+          <model>
+            <item value="Load Logs from file"/>
+            <item value=""/>
+            <item value="Display Log"/>
+            <item value=""/>
+            <item value="Remove Data"/>
+            <item value=""/>
+            <item value="Audit Log"/>
+            <item value=""/>
+            <item value="Employee records"/>
+            <item value=""/>
+            <item value="Exit"/>
+          </model>
+        </properties>
+      </component>
+      <component id="91451" class="javax.swing.JTextField" binding="optionField2">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <minimum-size width="150" height="30"/>
+            <preferred-size width="150" height="45"/>
+            <maximum-size width="200" height="50"/>
+          </grid>
+        </constraints>
+        <properties>
+          <font name="Georgia" size="14" style="0"/>
+        </properties>
+      </component>
+      <component id="90a6b" class="javax.swing.JButton" binding="btnEnter">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Button"/>
+        </properties>
+      </component>
+      <component id="66501" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font name="Baskerville Old Face" size="18" style="1"/>
+          <text value="Enter Option"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>
